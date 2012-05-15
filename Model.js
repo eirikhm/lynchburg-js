@@ -108,7 +108,7 @@ var Model = {
     {
         var result = [];
         for (var key in this.records)
-        {@
+        {
             result.push(this.records[key]);
         }
         return result;
