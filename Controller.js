@@ -6,7 +6,6 @@ var exports = this;
 
     mod.create = function (includes)
     {
-
         var result = function ()
         {
             this.beforeInit.apply(this, arguments);
@@ -18,6 +17,7 @@ var exports = this;
 
         result.fn.init = function ()
         {
+
         };
 
         result.proxy = function (func)
@@ -69,7 +69,8 @@ var exports = this;
             {
 
             },
-            $:          function (selector)
+
+            $:function (selector)
             {
                 return $(selector, this.el);
             },

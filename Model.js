@@ -1,72 +1,63 @@
 var Model = {
     inherited:function ()
     {
+
     },
 
     created:function ()
     {
+
     },
 
     prototype:{
         init:function ()
         {
+
         }
     },
 
-           /**
-            * Return new object inherited from Model
-            * @return {*}
-            */
-           create:function ()
-           {
-               var object = Object.create(this);
-               object.parent = this;
-               object.prototype = object.fn = Object.create(this.prototype);
+    //  Return new object inherited from Model
+    create:   function ()
+    {
+        var object = Object.create(this);
+        object.parent = this;
+        object.prototype = object.fn = Object.create(this.prototype);
 
-               object.created();
-               this.inherited(object);
-               return object;
-           },
+        object.created();
+        this.inherited(object);
+        return object;
+    },
 
-         /**
-          * Returns new Model
-          * @return {*}
-          */
-         init:function ()
-         {
-             var instance = Object.create(this.prototype);
-             instance.parent = this;
-             instance.init.apply(instance, arguments);
-             return instance;
-         },
+    // Returns new Model
+    init:     function ()
+    {
+        var instance = Object.create(this.prototype);
+        instance.parent = this;
+        instance.init.apply(instance, arguments);
+        return instance;
+    },
 
-           /**
-            * Extend the actual class
-            * @param o
-            */
-           extend:function (o)
-           {
-               var extended = o.extended;
-               jQuery.extend(this, o);
-               if (extended)
-               {
-                   extended(this);
-               }
-           },
+    // Extend the actual class
+    extend:   function (o)
+    {
+        var extended = o.extended;
+        jQuery.extend(this, o);
+        if (extended)
+        {
+            extended(this);
+        }
+    },
 
-            /**
-             * Extend instance
-             * @param o
-             */
-            include:function (o)
-            {
-                var included = o.included;
-                jQuery.extend(this.prototype, o);
-                if (included)
-                {
-                    included(this);
-                }
-            },
+    // Extend instance
+    include:  function (o)
+    {
+        var included = o.included;
+        jQuery.extend(this.prototype, o);
+        if (included)
+        {
+            included(this);
+        }
+    },
 
     find:function (id)
     {
@@ -117,7 +108,7 @@ var Model = {
     {
         var result = [];
         for (var key in this.records)
-        {
+        {@
             result.push(this.records[key]);
         }
         return result;
@@ -171,11 +162,12 @@ Model.include({
         this.trigger("create");
     },
 
-    updateAttribute: function (name, value)
+    updateAttribute:function (name, value)
     {
         this[name] = value;
         return this.save();
     },
+
     updateAttributes:function (attributes)
     {
         this.load(attributes);
@@ -203,10 +195,11 @@ Model.include({
         this.trigger("destroy");
     },
 
-    dup: function ()
+    dup:function ()
     {
         return jQuery.extend(true, {}, this);
     },
+
     save:function ()
     {
         this.trigger("beforeSave");
@@ -215,7 +208,7 @@ Model.include({
         this.trigger("save");
     },
 
-    attributes:  function ()
+    attributes:function ()
     {
         var result = {};
         for (var i in this.parent.attributes)
@@ -226,10 +219,12 @@ Model.include({
         result.id = this.id;
         return result;
     },
-    toJSON:      function ()
+
+    toJSON:function ()
     {
         return (this.attributes);
     },
+
     createRemote:function (url, callback)
     {
         $.post(url, this.attributes(), callback);
@@ -247,11 +242,12 @@ Model.include({
 });
 
 Model.extend({
-    created:  function ()
+    created:function ()
     {
         this.records = {};
         this.attributes = {};
     },
+
     saveLocal:function (name)
     {
         var result = [];
@@ -261,6 +257,7 @@ Model.extend({
         }
         localStorage[name] = JSON.stringify(result);
     },
+
     loadLocal:function (name)
     {
         if (localStorage[name])

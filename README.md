@@ -1,4 +1,3 @@
-lynchburg-js
-============
+## LynchburgJS: Core set of models, controllers and utils
 
-Models, controllers. That sort of thing.
+Some foundation classes are based on the work of [Alex MacCaw](https://github.com/maccman/book-assets)

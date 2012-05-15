@@ -1,5 +1,6 @@
 var StateMachine = function ()
 {
+
 };
 
 StateMachine.fn = StateMachine.prototype;
