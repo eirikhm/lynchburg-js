@@ -1,4 +1,4 @@
-var Events = {
+lynchburg.Events = {
     bind:function ()
     {
         if (!this.o)

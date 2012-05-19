@@ -1,4 +1,4 @@
-var Model = {
+lynchburg.Model = {
     inherited:function ()
     {
 
@@ -125,12 +125,12 @@ var Model = {
     {
         return this.recordsValues().length;
     }
-
 };
-Model.records = {};
+lynchburg.Model.records = {};
 
-Model.include({
+lynchburg.Model.include({
     newRecord:true,
+    errors:   [],
 
     init:function (atts)
     {
@@ -141,8 +141,32 @@ Model.include({
         }
     },
 
-    validate:function ()
+    validate:function (attributes)
     {
+        var errors = {},
+            Validator = lynchburg.Validator,
+            attributes = attributes || this.properties();
+
+        debug('attributes', attributes, this.properties());
+
+        for (var i = 0, l = attributes.length; i < l; i++)
+        {
+            var attribute = attributes[i],
+                rules = this.parent.attributes[attribute],
+                error;
+
+            if (typeof rules !== 'object')
+            {
+                continue;
+            }
+            error = Validator.validate(this, attribute, rules);
+            if (error.length > 0)
+            {
+                errors[attribute] = error;
+            }
+        }
+        this.errors = errors;
+        return errors.length == 0;
     },
 
     load:function (attributes)
@@ -211,12 +235,23 @@ Model.include({
     attributes:function ()
     {
         var result = {};
-        for (var i in this.parent.attributes)
+        for (var attr in this.parent.attributes)
         {
-            var attr = this.parent.attributes[i];
+            //var attr = this.parent.attributes[i];
             result[attr] = this[attr];
         }
         result.id = this.id;
+        return result;
+    },
+    properties:function ()
+    {
+        var result = [];
+        for (var attr in this.parent.attributes)
+        {
+            //var attr = this.parent.attributes[i];
+            result.push(attr);
+        }
+        result.push('id');
         return result;
     },
 
@@ -241,11 +276,13 @@ Model.include({
     }
 });
 
-Model.extend({
+lynchburg.Model.extend({
     created:function ()
     {
         this.records = {};
         this.attributes = {};
+        this.rules = [];
+        this.errors = [];
     },
 
     saveLocal:function (name)
@@ -268,4 +305,4 @@ Model.extend({
     }
 });
 
-Model.extend(Events);
+lynchburg.Model.extend(lynchburg.Events);

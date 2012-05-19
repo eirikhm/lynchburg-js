@@ -1,4 +1,4 @@
-var exports = this;
+var exports = window.lynchburg;
 
 (function ($)
 {

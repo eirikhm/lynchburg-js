@@ -1,13 +1,13 @@
-var StateMachine = function ()
+lynchburg.StateMachine = function ()
 {
 
 };
 
-StateMachine.fn = StateMachine.prototype;
+lynchburg.StateMachine.fn = lynchburg.StateMachine.prototype;
 
-$.extend(StateMachine.fn, Events);
+$.extend(lynchburg.StateMachine.fn, lynchburg.Events);
 
-StateMachine.fn.add = function (controller)
+lynchburg.StateMachine.fn.add = function (controller)
 {
     this.bind('change', function (e, current)
     {

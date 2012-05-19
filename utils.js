@@ -34,3 +34,11 @@ var assertEqual = function (val1, val2, msg)
         throw(msg || (val1 + ' does not equal ' + val2));
     }
 };
+
+var debug = function ()
+{
+    if(window.console)
+    {
+        console.log(arguments);
+    }
+};
