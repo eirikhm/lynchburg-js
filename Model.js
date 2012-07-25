@@ -1,308 +1,217 @@
-lynchburg.Model = {
-    inherited:function ()
-    {
-
-    },
-
-    created:function ()
-    {
-
-    },
-
-    prototype:{
-        init:function ()
+exports = window.lynchburg;
+(function ()
+{
+    "use strict";
+    exports.Model = exports.Component.inherit({
+        beforeInit:function (atts)
         {
-
-        }
-    },
-
-    //  Return new object inherited from Model
-    create:   function ()
-    {
-        var object = Object.create(this);
-        object.parent = this;
-        object.prototype = object.fn = Object.create(this.prototype);
-
-        object.created();
-        this.inherited(object);
-        return object;
-    },
-
-    // Returns new Model
-    init:     function ()
-    {
-        var instance = Object.create(this.prototype);
-        instance.parent = this;
-        instance.init.apply(instance, arguments);
-        return instance;
-    },
-
-    // Extend the actual class
-    extend:   function (o)
-    {
-        var extended = o.extended;
-        jQuery.extend(this, o);
-        if (extended)
-        {
-            extended(this);
-        }
-    },
-
-    // Extend instance
-    include:  function (o)
-    {
-        var included = o.included;
-        jQuery.extend(this.prototype, o);
-        if (included)
-        {
-            included(this);
-        }
-    },
-
-    find:function (id)
-    {
-        var record = this.records[id];
-        if (!record)
-        {
-            throw ('Unknown record');
-        }
-        return record.dup();
-    },
-
-    populate:function (values)
-    {
-        this.records = {};
-        for (var i = 0, il = values.length; i < il; i++)
-        {
-            var record = this.init(values[i]);
-            record.newRecord = false;
-            this.records[record.id] = record;
-        }
-    },
-
-    select:function (callback)
-    {
-        var result = [];
-
-        for (var key in this.records)
-        {
-            if (callback(this.records[key]))
+            // These end up in prototype if not instantied during creation
+            // which means they share state between instances after next inheritance
+            this.newRecord = true;
+            this.attributes = {};
+            this.errors = {};
+            if (atts)
             {
-                result.push(this.records[key]);
+                this.id = atts.id;
+                this.load(atts);
             }
-        }
+        },
 
-        return this.dupArray(result);
-    },
-
-    destroy:function (id)
-    {
-        this.find(id).destroy();
-    },
-
-    all:          function ()
-    {
-        return this.dupArray(this.recordsValues());
-    },
-    recordsValues:function ()
-    {
-        var result = [];
-        for (var key in this.records)
+        validate:function (attributes)
         {
-            result.push(this.records[key]);
-        }
-        return result;
-    },
+            var errors = {},
+                Validator = lynchburg.Validator,
+                attributes = attributes || Object.keys(this.attributes);
 
-    dupArray:function (array)
-    {
-        return array.map(function (item)
-        {
-            return item.dup();
-        });
-    },
-    count:   function ()
-    {
-        return this.recordsValues().length;
-    }
-};
-lynchburg.Model.records = {};
-
-lynchburg.Model.include({
-    newRecord:true,
-    errors:   [],
-
-    init:function (atts)
-    {
-
-        if (atts)
-        {
-            this.load(atts);
-        }
-    },
-
-    validate:function (attributes)
-    {
-        var errors = {},
-            Validator = lynchburg.Validator,
-            attributes = attributes || this.properties();
-
-        debug('attributes', attributes, this.properties());
-
-        for (var i = 0, l = attributes.length; i < l; i++)
-        {
-            var attribute = attributes[i],
-                rules = this.parent.attributes[attribute],
-                error;
-
-            if (typeof rules !== 'object')
+            for (var i = 0, l = attributes.length; i < l; i++)
             {
-                continue;
+                var attribute = attributes[i],
+                    validators = this.rules[attribute] && this.rules[attribute]['validators']||null,
+                    error;
+
+                if (typeof validators !== 'object')
+                {
+                    continue;
+                }
+                error = Validator.validate(this, attribute, validators);
+                if (error.length > 0)
+                {
+                    errors[attribute] = error;
+                }
             }
-            error = Validator.validate(this, attribute, rules);
-            if (error.length > 0)
+            this.errors = errors;
+            return Object.keys(errors).length == 0;
+        },
+
+        load:         function (attributes)
+        {
+            this.newRecord = false;
+            for (var name in attributes)
             {
-                errors[attribute] = error;
+                this.setAttribute(name, attributes[name]);
             }
-        }
-        this.errors = errors;
-        return errors.length == 0;
-    },
-
-    load:function (attributes)
-    {
-        for (var name in attributes)
+        },
+        attribute:    function (name, value)
         {
-            this[name] = attributes[name];
-        }
-    },
-
-    create:function ()
-    {
-        this.trigger("beforeCreate");
-        this.newRecord = false;
-        this.parent.records[this.id] = this.dup();
-        this.trigger("afterCreate");
-        this.trigger("create");
-    },
-
-    updateAttribute:function (name, value)
-    {
-        this[name] = value;
-        return this.save();
-    },
-
-    updateAttributes:function (attributes)
-    {
-        this.load(attributes);
-        return this.save();
-    },
-
-    trigger:function (channel)
-    {
-        this.parent.trigger(channel, this);
-    },
-
-    update:function ()
-    {
-        this.trigger("beforeUpdate");
-        this.parent.records[this.id] = this.dup();
-        this.trigger("afterUpdate");
-        this.trigger("update");
-    },
-
-    destroy:function ()
-    {
-        this.trigger("beforeDestroy");
-        delete this.parent.records[this.id];
-        this.trigger("afterDestroy");
-        this.trigger("destroy");
-    },
-
-    dup:function ()
-    {
-        return jQuery.extend(true, {}, this);
-    },
-
-    save:function ()
-    {
-        this.trigger("beforeSave");
-        this.newRecord ? this.create() : this.update();
-        this.trigger("afterSave");
-        this.trigger("save");
-    },
-
-    attributes:function ()
-    {
-        var result = {};
-        for (var attr in this.parent.attributes)
+            var attribute = this.attributes[name];
+            if (!attribute)
+            {
+                throw Error('No such attribute ' + name);
+            }
+            if (typeof value === 'undefined')
+            {
+                return attribute;
+            }
+            attribute = value;
+            this.attributes[name] = attribute;
+        },
+        setAttribute: function (name, value)
         {
-            //var attr = this.parent.attributes[i];
-            result[attr] = this[attr];
-        }
-        result.id = this.id;
-        return result;
-    },
-    properties:function ()
-    {
-        var result = [];
-        for (var attr in this.parent.attributes)
+            var attribute = this.attributes[name] || {};
+            attribute = value;
+            this.attributes[name] = attribute;
+        },
+        getAttribute: function (name)
         {
-            //var attr = this.parent.attributes[i];
-            result.push(attr);
-        }
-        result.push('id');
-        return result;
-    },
-
-    toJSON:function ()
-    {
-        return (this.attributes);
-    },
-
-    createRemote:function (url, callback)
-    {
-        $.post(url, this.attributes(), callback);
-    },
-
-    updateRemote:function (url, callback)
-    {
-        $.ajax({
-            url:    url,
-            data:   this.attributes(),
-            success:callback,
-            type:   'POST'
-        });
-    }
-});
-
-lynchburg.Model.extend({
-    created:function ()
-    {
-        this.records = {};
-        this.attributes = {};
-        this.rules = [];
-        this.errors = [];
-    },
-
-    saveLocal:function (name)
-    {
-        var result = [];
-        for (var i in this.records)
+            var attribute = this.attributes[name] || {};
+            return attribute;
+        },
+        getAttributes:function (attributes)
         {
-            result.push(this.records[i].attributes());
-        }
-        localStorage[name] = JSON.stringify(result);
-    },
+            return this.attributes;
+            // add support for getting only sent in attributes
+            var result = {};
 
-    loadLocal:function (name)
-    {
-        if (localStorage[name])
+            for (var attr in this.attributes)
+            {
+                //var attr = this.parent.attributes[i];
+                result[attr] = this[attr];
+            }
+
+            result.id = this.id;
+            return result;
+        },
+        setAttributes:function (attributes)
         {
-            var result = JSON.parse(localStorage[name]);
-            this.populate(result);
-        }
-    }
-});
+            for(var attribute in attributes)
+            {
+                this.setAttribute(attribute, attributes[attribute]);
+            }
+        },
 
-lynchburg.Model.extend(lynchburg.Events);
+        trigger:function (channel)
+        {
+            this.parent.trigger(channel, this);
+        },
+
+        //        destroy:function ()
+        //        {
+        //            this.trigger("beforeDestroy");
+        //            delete this.parent.records[this.id];
+        //            this.trigger("afterDestroy");
+        //            this.trigger("destroy");
+        //        },
+
+        dup:function ()
+        {
+            return jQuery.extend(true, {}, this);
+        },
+
+        //        addToCollection:function ()
+        //        {
+        //            // fix diff
+        //            this.trigger("beforeSave");
+        //            this.newRecord ? this.create() : this.update();
+        //            this.trigger("afterSave");
+        //            this.trigger("save");
+        //
+        //            this.trigger("beforeUpdate");
+        //            this.parent.records[this.id] = this.dup();
+        //            this.trigger("afterUpdate");
+        //            this.trigger("update");
+        //
+        //            this.trigger("beforeCreate", this);
+        //            this.newRecord = false;
+        //            this.parent.records[this.id] = this.dup();
+        //            this.trigger("afterCreate", this);
+        //            this.trigger("create", this);
+        //        },
+
+        properties:function ()
+        {
+            var result = [];
+            for (var attr in this.parent.attributes)
+            {
+                //var attr = this.parent.attributes[i];
+                result.push(attr);
+            }
+            result.push('id');
+            return result;
+        },
+
+        toJSON:function ()
+        {
+            return (this.attributes);
+        },
+
+        save:   function (callback, attributes)
+        {
+            return this.parent.createRemote(this.getAttributes(attributes), callback);
+        },
+        update: function (callback, attributes)
+        {
+            return this.parent.updateRemote(this.getAttribute('id'), this.getAttributes(attributes), callback);
+        },
+        refresh:function (callback)
+        {
+            return this.parent.loadRemote(this.getAttribute('id'), callback);
+        },
+        delete: function (callback)
+        {
+            this.parent.deleteRemote(this.getAttribute('id'), callback);
+        }
+    });
+
+    lynchburg.Model.extend({
+        created:function ()
+        {
+            this.records = {};
+            this.attributes = {};
+            this.rules = [];
+            this.errors = [];
+        },
+
+        saveLocal:function (name)
+        {
+            var result = [];
+            for (var i in this.records)
+            {
+                result.push(this.records[i].attributes());
+            }
+            localStorage[name] = JSON.stringify(result);
+        },
+
+        loadLocal:   function (name)
+        {
+            if (localStorage[name])
+            {
+                var result = JSON.parse(localStorage[name]);
+                this.populate(result);
+            }
+        },
+        createRemote:function (attributes, callback)
+        {
+        },
+        updateRemote:function (id, attributes, callback)
+        {
+        },
+        loadRemote:  function (id, callback)
+        {
+        },
+        deleteRemote:function (id, callback)
+        {
+        }
+    });
+
+    lynchburg.Model.extend(lynchburg.Events);
+}());

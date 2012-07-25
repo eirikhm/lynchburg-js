@@ -11,6 +11,8 @@
 
     lynchburg.t = function (message, replaces)
     {
-        return sprintf(message, replaces);
+        var message = sprintf(message, replaces);
+        debug(message);
+        return message;
     }
 }());

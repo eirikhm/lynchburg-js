@@ -1,19 +1,19 @@
 lynchburg.Events = {
     bind:function ()
     {
-        if (!this.o)
+        if (!this.eventHook)
         {
-            this.o = $({});
+            this.eventHook = $({});
         }
-        this.o.bind.apply(this.o, arguments);
+        this.eventHook.bind.apply(this.eventHook, arguments);
     },
 
     trigger:function ()
     {
-        if (!this.o)
+        if (!this.eventHook)
         {
-            this.o = $({});
+            this.eventHook = $({});
         }
-        this.o.trigger.apply(this.o, arguments);
+        this.eventHook.trigger.apply(this.eventHook, arguments);
     }
 };

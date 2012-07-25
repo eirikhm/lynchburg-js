@@ -1,6 +1,7 @@
 var exports = window.lynchburg;
 (function ()
 {
+    var emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     var validators = {
         required:function (attribute, value, params)
         {
@@ -16,41 +17,48 @@ var exports = window.lynchburg;
             {
                 return true;
             }
-            return params['message'] || "må være en boolean verdi"
+            return lynchburg.t("{attribute} must be a boolean value",{'{attribute}':attribute});
         },
         email:   function (attribute,value, params)
         {
-            var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-            if (re.test(value))
+            if (emailRegex.test(value))
             {
                 return true;
             }
-            return params['message'] || "er ikke en gyldig epost-adresse";
+            return lynchburg.t("{attribute} is not a valid email address",{'{attribute}':attribute});
         },
-        number:  function (attribute, value, params)
+        numerical:  function (attribute, value, params)
         {
             var intValue = parseInt(value),
                 message;
 
+            /*
+            // This breaks on save item for some reason..
             if (intValue + "" !== value)
             {
-                return "må være en numerisk verdi";
+                return lynchburg.t("{attribute} must be numeric",{'{attribute}':attribute});
             }
+            */
             if (params['min'] && params['max'])
             {
-                message = "må være mellom " + params['min'] + ' og ' + params['max'];
+                message = lynchburg.t("{attribute} is must be between {min} and {max}",{'{attribute}':attribute, '{min}':params['min'], '{max}':params['max']});
                 return intValue >= params['min'] && intValue <= params['max'] ? true : message;
             }
             else if (params['min'])
             {
-                message = 'må være større eller lik ' + params['min'];
+                message = lynchburg.t("{attribute} is must be equal or greater than {min}",{'{attribute}':attribute, '{min}':params['min']});
                 return intValue >= params['min'] ? true : message;
             }
             else if (params['max'])
             {
-                message = 'må være mindre eller lik ' + params['max'];
+                message = lynchburg.t("{attribute} is must be equal or less than {max}",{'{attribute}':attribute, '{max}':params['max']});
                 return intValue <= params['max'] ? true : message;
             }
+            return true;
+        },
+        length:function(attribute, value, params)
+        {
+            // todo
             return true;
         }
     };
@@ -59,7 +67,7 @@ var exports = window.lynchburg;
         validators:validators,
         validate:  function (model, attribute, rules)
         {
-            var value = model[attribute],
+            var value = model.getAttribute(attribute),
                 result,
                 errors = [];
 
@@ -82,7 +90,6 @@ var exports = window.lynchburg;
                 {
                     throw new Error('Unknown validator ' + validator);
                 }
-                debug("Validating ", attribute, value, validator);
 
                 if (result !== true)
                 {

@@ -59,15 +59,12 @@ var exports = window.lynchburg;
             },
             beforeInit: function ()
             {
-
             },
             activate:   function ()
             {
-
             },
             deactivate: function ()
             {
-
             },
 
             $:function (selector)
