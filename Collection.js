@@ -1,14 +1,32 @@
 exports = window.lynchburg;
 (function ()
 {
+    /**
+     * Returns a item duplication
+     *
+     * @param array
+     * @return {*}
+     */
+    function dupArray(array)
+    {
+        return array.map(function (model)
+        {
+            return model.duplicate();
+        });
+    }
+
     "use strict";
     exports.Collection = exports.Component.inherit({
 
         // defining records here makes all subclasses share this record array.
         // records:  {},
-        beforeInit:function (atts)
+        construct:function (models)
         {
-            this.records = {};
+            this.records = [];
+            if (typeof models === 'object')
+            {
+                this.populate(models);
+            }
         },
 
         /**
@@ -16,18 +34,44 @@ exports = window.lynchburg;
          *
          * @param model
          */
-        add:function(model)
+        add:function (model)
         {
-            this.records[model.id] = model;
+            this.records.push(model);
         },
 
         /**
          * Remove object with supplied ID from collection
          * @param id
          */
-        remove:function(id)
+        remove:function (id)
         {
-            delete this.records[id];
+            id = parseInt(id, 10);
+            var i = 0,
+                length = this.records.length;
+            for (; i < length; i++)
+            {
+                if (this.records[i].id === id)
+                {
+                    this.records.splice(i,1);
+                    return true;
+                }
+            }
+            return false;
+        },
+        update:function (model)
+        {
+            var record,
+                i = 0;
+            for (; i < this.records.length; i++)
+            {
+                record = this.records[i];
+                if (record.id === model.id)
+                {
+                    this.records[i] = model;
+                    return;
+                }
+            }
+            throw ('Cannot update unknown model ' + model.id);
         },
 
         /**
@@ -47,52 +91,54 @@ exports = window.lynchburg;
          */
         find:function (id)
         {
-            var record = this.records[id];
-            if (!record)
+            id = parseInt(id, 10);
+            var record,
+                i = 0;
+            for (; i < this.records.length; i++)
             {
-                throw ('Unknown record');
+                record = this.records[i];
+                if (record.id === id)
+                {
+                    return record;
+                }
             }
-            // Don't return duplicate, extend messes up the object
-            // as it doesn't exactly duplicate the object (prototype etc is destroyed it seems)
-            return record;
+            throw ('Unknown model-id ' + id);
         },
 
         /**
          * Populates the collection with the supplied objects
          *
-         * @param values
+         * @param models
          */
-        populate:function (values)
+        populate:function (models)
         {
-            this.records = {};
-            for (var i = 0, il = values.length; i < il; i++)
+            this.records = [];
+            for (var i = 0, il = models.length; i < il; i++)
             {
-                var record = this.init(values[i]);
-                record.newRecord = false;
-                // todo: hack?
-                this.records[record.id.value] = record;
+                this.add(models[i]);
             }
         },
 
         /**
-         * Filter collection with callback. If callback returns true, record is retunred
+         * Filter collection with callback. If callback returns true, record is returned
          *
          * @param callback
          * @return {*}
          */
         select:function (callback)
         {
-            var result = [];
+            var result = [],
+                i = 0,
+                length = this.records.length;
 
-            for (var key in this.records)
+            for (; i < length; i++)
             {
-                if (callback(this.records[key]))
+                if (callback(this.records[i]))
                 {
-                    result.push(this.records[key]);
+                    result.push(this.records[i]);
                 }
             }
-
-            return this.dupArray(result);
+            return result;
         },
 
         /**
@@ -100,38 +146,17 @@ exports = window.lynchburg;
          *
          * @return {*}
          */
-        all:          function ()
+        all:function ()
         {
-            return this.dupArray(this.recordsValues());
+            return this.records;
         },
 
         /**
-         * Returns all values
-         *
-         * @return {Array}
+         * Returns a boolean wether or not the collection is empty
          */
-        recordsValues:function ()
+        isEmpty:function ()
         {
-            var result = [];
-            for (var key in this.records)
-            {
-                result.push(this.records[key]);
-            }
-            return result;
-        },
-
-        /**
-         * Returns a item duplication
-         *
-         * @param array
-         * @return {*}
-         */
-        dupArray:function (array)
-        {
-            return array.map(function (item)
-            {
-                return item.dup();
-            });
+            return this.records.length === 0;
         },
 
         /**
@@ -139,9 +164,9 @@ exports = window.lynchburg;
          *
          * @return {Number}
          */
-        count:   function ()
+        count:function ()
         {
-            return this.recordsValues().length;
+            return this.records.length;
         },
 
         /**

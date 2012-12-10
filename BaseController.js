@@ -5,10 +5,9 @@ var exports = window.lynchburg;
     var eventSplitterRegex = /^(\w+)\s*(.*)$/;
 
     exports.BaseController = exports.Component.inherit({
-        controllers:{},
         construct:  function (params)
         {
-            //console.trace();
+            this.controllers = {};
             this.setupControllerData(params);
         },
 
@@ -31,53 +30,88 @@ var exports = window.lynchburg;
                 this.intializeElements();
             }
         },
-
-        init:function ()
+        buildPage:          function ()
         {
             var self = this;
-            this.invokeParent('init', arguments);
+            this.ensurePageRendered();
 
-            /**
-             * TODO: This should definately not be a part of the Lynchburg core classes. We should subclass BaseController
-             * and let this logic live in that.
-             *
-             */
+            this.el = $(this.el.selector);
+            this.intializeElements(true);
+            this.populate();
+            this.delegateEvents();
 
-            //            this.el.live('pagebeforeshow', function (event, data)
-            //            {
-            //                console.log('Got pageshow event', data);
-            //                if (typeof self.activate === 'function')
-            //                {
-            //                    console.log(self.el, ' is being shown, calling activate');
-            //                    self.activate();
-            //                }
-            //            });
-            this.el.live('pagehide', function (event, data)
+            this.el.off('pagehide').on('pagehide', function (event, data)
             {
-                console.log('Got pagehide event', data);
                 if (typeof self.deactivate === 'function')
                 {
                     self.deactivate();
                 }
             });
-            this.el.live('pagecreate', function (event, data)
-            {
-                console.log('Got pagecreate event', data);
-                if (typeof self.activate === 'function')
-                {
-                    self.activate();
-                }
-            });
         },
 
-        activate:  function ()
+        activate:function (pageOptions)
         {
-            //console.log('BaseController::activate');
+            this.trigger('activate');
+            this.buildPage();
+            this.show(pageOptions);
+            this.trigger('activated');
+        },
+
+        ensurePageRendered:function ()
+        {
+            if (this.template && $(this.el.selector).length <= 0)
+            {
+                this.render({});
+            }
+        },
+
+        // abstract method
+        show:              function (pageOptions)
+        {
+            console.log('BaseController::show');
+        },
+
+        // abstract method
+        populate:          function ()
+        {
+
+        },
+
+        render:function (params)
+        {
+            params = params || {};
+            /*var placeHolderId = '__placeholder_' + this.template;
+             $('body').append('<div id="' + placeHolderId + '"></div>');
+             $.link[this.template]('#' + placeHolderId, params, {target:'replace'});*/
+            $('body').append($.render[this.template](params, {link:false}));
+        },
+
+        renderAndLink:function (params, target)
+        {
+            params = params || {};
+
+            if (target == undefined)
+            {
+                var placeHolderId = '__placeholder_' + this.template;
+                $('body').append('<div id="' + placeHolderId + '"></div>');
+                $.link[this.template]('#' + placeHolderId, params, {target:'replace'});
+            }
+            else
+            {
+                $.link[this.template](target, params);
+            }
         },
 
         deactivate:function ()
         {
-            //console.log('BaseController::deactivate');
+            this.trigger('deactivate');
+            this.el.off('pagehide');
+
+            this.el.unlink();
+            if (this.el.length > 0)
+            {
+                this.el.remove();
+            }
         },
 
         $:function (selector)
@@ -111,32 +145,81 @@ var exports = window.lynchburg;
                 if
                     (selector === '')
                 {
-                    this.el.bind(eventName, method);
+                    this.el.unbind(eventName, method).bind(eventName, method);
                 }
                 else
                 {
-                    this.el.delegate(selector, eventName, method);
+                    this.el.undelegate(selector, eventName).delegate(selector, eventName, method);
                 }
             }
         },
 
-        proxy:function (func)
+        proxy:                     function (func)
         {
             return $.proxy(func, this);
         },
 
-        registerController:function (name, params)
+        // TODO: Bug here
+        changePage:                function (cName, pageOptions)
         {
-            var self = this,
-                params = params || {},
-                controllerName = name.charAt(0).toUpperCase() + name.slice(1) + 'Controller',
-                controller;
-            if (window[controllerName])
+            var controller = this.getController(cName, {});
+            controller.activate(pageOptions);
+        },
+
+        // use this to register a controller. checks that views are loaded, and returns early if the controller is already loaded
+        getController:          function (shortName, params)
+        {
+            params = params || {};
+            var controllerName = this.buildControllerClassName(shortName);
+            var controller = null;
+
+            if (!this.isControllerCreated(shortName))
             {
-                controller = window[controllerName].create(params);
-                this.controllers[name] = controller;
+                controller = this.registerControllerInternal(shortName, controllerName, params);
+            }
+            else
+            {
+                controller = this.controllers[shortName];
             }
             return controller;
+        },
+
+        // instantiates a controller and adds it to the internal controller map
+        registerControllerInternal:function (shortName, controllerName, params)
+        {
+            var params = params || {},
+                controller;
+            if (!straks.controllers[controllerName])
+            {
+                throw "Controller " + controllerName + " is not defined.";
+            }
+
+            //TODO: fix namespace access for controller (straks.controllers.Home)
+            controller = straks.controllers[controllerName].create(params);
+            this.controllers[shortName] = controller;
+            return controller;
+        },
+
+        // builds the actual class name for a controller short name
+        buildControllerClassName:  function (name)
+        {
+            return name.charAt(0).toUpperCase() + name.slice(1);
+        },
+
+        // checks if controller is instantiated.
+        isControllerCreated:       function (controllerName)
+        {
+            return typeof this.controllers[controllerName] === 'object';
+        },
+
+        // checks if EL in controller exists in DOM. Could also store this state in controller, but we might want to delete pages on hide to save memory.
+        isViewLoadedForController: function (controllerName)
+        {
+            if (!straks.controllers[controllerName].hasOwnProperty('viewFile') || $(straks.controllers[controllerName]['el']).length > 0)
+            {
+                return true;
+            }
+            return false;
         }
     });
     exports.BaseController.extend(lynchburg.Events);

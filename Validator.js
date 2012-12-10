@@ -5,13 +5,17 @@ var exports = window.lynchburg;
     var validators = {
         required:function (attribute, value, params)
         {
+            if (typeof value === 'boolean' && value === false || value === 0)
+            {
+                return true;
+            }
             if (value)
             {
                 return true;
             }
             return lynchburg.t("{attribute} is a required field",{'{attribute}':attribute});
         },
-        boolean: function (attribute, value, params)
+        'boolean': function (attribute, value, params)
         {
             if (typeof value === 'boolean')
             {

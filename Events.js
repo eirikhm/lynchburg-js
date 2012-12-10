@@ -1,19 +1,32 @@
-lynchburg.Events = {
-    bind:function ()
+(function ()
+{
+    function ensureHook ()
     {
         if (!this.eventHook)
         {
             this.eventHook = $({});
         }
-        this.eventHook.bind.apply(this.eventHook, arguments);
-    },
-
-    trigger:function ()
-    {
-        if (!this.eventHook)
-        {
-            this.eventHook = $({});
-        }
-        this.eventHook.trigger.apply(this.eventHook, arguments);
     }
-};
+
+    lynchburg.Events = {
+        bind:  function ()
+        {
+            ensureHook.call(this);
+            this.eventHook.bind.apply(this.eventHook, arguments);
+            return this;
+        },
+        unbind:function ()
+        {
+            ensureHook.call(this);
+            this.eventHook.unbind.apply(this.eventHook, arguments);
+            return this;
+        },
+
+        trigger:function ()
+        {
+            ensureHook.call(this);
+            this.eventHook.trigger.apply(this.eventHook, arguments);
+            return this;
+        }
+    };
+}());

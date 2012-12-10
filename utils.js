@@ -10,6 +10,23 @@ if (typeof Object.create !== 'function')
         return new F();
     };
 }
+if (typeof Object.getPrototypeOf !== "function")
+{
+    if (typeof "t".__proto__ === "object")
+    {
+        Object.getPrototypeOf = function (object)
+        {
+            return object.__proto__;
+        };
+    }
+    else
+    {
+        Object.getPrototypeOf = function (object)
+        {
+            return object.constructor.prototype;
+        };
+    }
+}
 Math.guid = function ()
 {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,
@@ -42,3 +59,15 @@ var debug = function ()
         console.log(arguments);
     }
 };
+(function ($)
+{
+    $.fn.serializeJSON = function ()
+    {
+        var json = {};
+        jQuery.map($(this).serializeArray(), function (n, i)
+        {
+            json[n['name']] = n['value'];
+        });
+        return json;
+    };
+})(jQuery);
