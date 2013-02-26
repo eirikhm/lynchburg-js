@@ -1,5 +1,4 @@
 /// <reference path='MyController.ts' />
-
 class MyApplication extends BaseApplication {
     constructor()
     {

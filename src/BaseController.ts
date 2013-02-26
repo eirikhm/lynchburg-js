@@ -1,16 +1,12 @@
 class BaseController {
-    private controllers:Array;
     private options:Object;
     private eventSplitterRegex:RegExp = /^(\w+)\s*(.*)$/;
-
-
     public events:Object;
     private elements:Object;
     private selectors:Object;
 
     private el:JQuery;
 
-    private template:String;
 
     constructor(el:JQuery)
     {

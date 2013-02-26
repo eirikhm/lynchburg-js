@@ -6,8 +6,6 @@ class BaseApplication
         var templates : any = {},
             templateId : String  = '',
             templateMarkup :string = '';
-
-
         $.get(url, function (data)
         {
             $(data).each(function (index : number, element : any)

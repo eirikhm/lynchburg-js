@@ -1,5 +1,4 @@
 /// <reference path="jquery.d.ts" />
-
 class Model {
     private definitions = {};
     private attributes = {};

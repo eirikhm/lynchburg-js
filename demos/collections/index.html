@@ -1,0 +1,42 @@
+<html>
+<head>
+    <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script src="../../src/Model.js"></script>
+    <script src="../../src/Collection.js"></script>
+
+</head>
+<body>
+<script>
+
+    console.log('----- START');
+    var collection = new Collection();
+    console.log('Collection.isEmpty() : ' + collection.isEmpty());
+    var model = new Model();
+    model.id = 12;
+
+    console.log('----- ADDING MODEL');
+    collection.add(model);
+
+    console.log('Collection.count() : ' + collection.count());
+    console.log('Collection.isEmpty() : ' + collection.isEmpty());
+    console.log('Collection.all() : ', collection.all());
+    console.log('Collection.find(12) : ', collection.find(12));
+
+    console.log('----- STORING');
+    collection.saveLocal('myStore');
+
+    console.log('----- RESUMING');
+    var collection2 = new Collection();
+    collection2.loadLocal('myStore');
+    console.log('Collection2.count() : ' + collection2.count());
+    console.log('Collection2.isEmpty() : ' + collection2.isEmpty());
+    console.log('Collection2.all() : ', collection2.all());
+    console.log('Collection2.find(12) : ', collection2.find(12));
+
+
+</script>
+
+
+
+</body>
+</html>

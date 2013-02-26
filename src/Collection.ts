@@ -1,5 +1,4 @@
 class Collection {
-
     private records = [];
 
     public construct(models:Model[])
@@ -162,7 +161,7 @@ class Collection {
         var result = [];
         for (var i in this.records)
         {
-            result.push(this.records[i].attributes());
+            result.push(this.records[i].getAttributes());
         }
         localStorage[name] = JSON.stringify(result);
     }
