@@ -1,0 +1,23 @@
+<html>
+<head>
+    <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script src="globals.js"></script>
+    <script src="../../src/BaseController.js"></script>
+    <script src="../../src/BaseApplication.js"></script>
+    <script src="MyController.js"></script>
+    <script src="MyApplication.js"></script>
+
+</head>
+<body>
+<script>
+    $(document).ready(function() {
+        var app = new MyApplication($('#container'));
+    });
+</script>
+
+
+<div id="container">
+<button >Click</button>
+</div>
+</body>
+</html>
