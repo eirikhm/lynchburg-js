@@ -1,0 +1,41 @@
+<html>
+<head>
+    <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script src="../../src/Model.js"></script>
+
+</head>
+<body>
+<script>
+
+/*
+
+var model = new Model();
+model.id = 12;
+model.category_id = 120;
+model.note = 'this is a note';
+x'
+*/
+
+    var model = new Model({
+        id : 12,
+        category_id : 120,
+        note : 'this is a note'
+    });
+
+
+
+
+    console.log("model.getAttribute('note'): " , model.attribute('note'));
+    console.log("model.getAttribute: " , model.attributes);
+    console.log(model.validate());
+
+
+
+
+
+</script>
+
+
+
+</body>
+</html>

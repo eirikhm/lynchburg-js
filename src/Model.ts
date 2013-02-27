@@ -7,7 +7,7 @@ class Model {
     private errors = {};
     private id = null;
 
-    public construct(attributes:any)
+    construct(attributes:any)
     {
         if (typeof attributes === 'object')
         {
@@ -63,16 +63,18 @@ class Model {
         var errors = {},
             attributes = attributes || Object.keys(this.definitions);
 
+        console.log('ASDFADSADS',this.definitions);
         for (var i = 0, l = attributes.length; i < l; i++)
         {
             var attribute = attributes[i],
                 validators = this.definitions[attribute] && this.definitions[attribute]['validators'] || null,
                 error;
-
+            console.log('ASDFADSADS111');
             if (typeof validators !== 'object')
             {
                 continue;
             }
+            console.log('valodat');
             error = Validator.validate(this, attribute, validators);
             if (error.length > 0)
             {
@@ -188,7 +190,7 @@ class Model {
         }
 
         // How do we solve this?
-        return new (attributes);
+        return´ new (attributes);
     }
 
     public toJSON()

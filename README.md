@@ -1,3 +1,19 @@
 ## LynchburgJS: Core set of models, controllers and utils
 
-Some foundation classes are based on the work of [Alex MacCaw](https://github.com/maccman/book-assets)
+PROJECT STATUS
+------------
+
+We are in the process of moving the JS code over to TypeScript. Some internal-caused dependencies will be removed in as this progresses.
+
+Namespaces will be added to avoid conflicts!
+
+
+INSTALLATION
+------------
+
+Check demos/basic for a basic setup.
+
+REQUIREMENTS
+------------
+
+jQuery is currently required, but this dependency will probably be removed in the future.
