@@ -1,0 +1,20 @@
+{
+    "name": "lynchburg/lynchburg-js",
+    "type": "library",
+
+    "description": "Javascript 'MVC' Framework.",
+    "keywords": ["javascript", "MVC", "Framework"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Eirik Hoem",
+            "email": "eirikhm@gmail.com",
+            "homepage": "https://github.com/eirikhm"
+        },
+        {
+            "name": "Knut Eirik Leira Hjelle",
+            "email": "knut.eirik.leira.hjelle@gmail.com",
+            "homepage": "https://github.com/hjellek"
+        }
+    ],
+}
