@@ -17,3 +17,6 @@ REQUIREMENTS
 ------------
 
 jQuery is currently required, but this dependency will probably be removed in the future.
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/eirikhm/lynchburg-js/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
